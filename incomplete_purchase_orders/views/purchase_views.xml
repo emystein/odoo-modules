@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="incomplete_deliveries_search" model="ir.ui.view">
+            <field name="name">Incomplete Deliveries Search</field>
+            <field name="model">purchase.order.line</field>
+            <field name="inherit_id" ref="basic_purchase_order_line_views.purchase_order_line_search_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                    <filter name="received_quantity_is_less_than_requested" string="Received Quantity is less than expected" domain="[('received_quantity_is_less_than_requested', '=', True)]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

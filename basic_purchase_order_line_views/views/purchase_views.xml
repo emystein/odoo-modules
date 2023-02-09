@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+	<!-- Purchase Orders line Calendar View  -->
+	<record id="purchase_order_line_calendar_view" model="ir.ui.view">
+        <field name="name">purchase.order.line.calendar</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <calendar string="Purchase Order Line" date_start="create_date" color="state" hide_time="true" event_limit="5">
+                <field name="currency_id" invisible="1"/>
+                <field name="product_id" avatar_field="image_128"/>
+                <field name="price_total" widget="monetary"/>
+            </calendar>
+        </field>
+    </record>
+
+	<!-- Purchase Orders line Graph View  -->
+	<record model="ir.ui.view" id="purchase_order_line_graph_view">
+        <field name="name">purchase.order.line.graph</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <graph string="Purchase Orders Line">
+                <field name="product_id"/>
+                <field name="price_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+	<!-- Purchase Order Line Pivot View  -->
+	<record model="ir.ui.view" id="purchase_order_line_pivot_view">
+        <field name="name">purchase.order.line.pivot</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Purchase Order Line">
+                <field name="order_id" type="row"/>
+                <field name="price_subtotal" type="measure"/>
+                <field name="product_qty" type="measure"/>
+                <field name="price_unit" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+	
+	<!-- Purchase Order Line Kanban View  -->
+	<record id="purchase_order_line_kanban_view" model="ir.ui.view">
+		<field name="name">purchase.order.line.kanban</field>
+        <field name="model">purchase.order.line</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+        	<kanban class="o_kanban_mobile" quick_create="false" create="false">
+                 <field name="name"/>
+                 <field name="product_id"/>
+                 <field name="product_qty"/>
+                 <field name="product_uom" groups="uom.group_uom"/>
+                 <field name="price_subtotal"/>
+                 <field name="price_tax" invisible="1"/>
+                 <field name="price_total" invisible="1"/>
+                 <field name="price_unit"/>
+                 <field name="display_type"/>
+                 <field name="taxes_id" invisible="1"/>
+                 <templates>
+                     <t t-name="kanban-box">
+                         <div t-attf-class="oe_kanban_card oe_kanban_global_click {{ record.display_type.raw_value ? 'o_is_' + record.display_type.raw_value : '' }}">
+                             <t t-if="!record.display_type.raw_value">
+                                 <div class="row">
+                                     <div class="col-8">
+                                         <strong>
+                                             <span t-esc="record.product_id.value"/>
+                                         </strong>
+                                     </div>
+                                     <div class="col-4">
+                                         <strong>
+                                             <span t-esc="record.price_subtotal.value" class="float-right text-right"/>
+                                         </strong>
+                                     </div>
+                                 </div>
+                                 <div class="row">
+                                     <div class="col-12 text-muted">
+                                         <span>
+                                             Quantity:
+                                             <t t-esc="record.product_qty.value"/>
+                                             <t t-esc="record.product_uom.value"/>
+                                         </span>
+                                     </div>
+                                 </div>
+                                 <div class="row">
+                                     <div class="col-12 text-muted">
+                                         <span>
+                                             Unit Price:
+                                             <t t-esc="record.price_unit.value"/>
+                                         </span>
+                                     </div>
+                                 </div>
+                             </t>
+                             <div t-elif="record.display_type.raw_value === 'line_section' || record.display_type.raw_value === 'line_note'" class="row">
+                                 <div class="col-12">
+                                     <span t-esc="record.name.value"/>
+                                 </div>
+                             </div>
+                         </div>
+                     </t>
+                 </templates>
+             </kanban>
+        </field>
+    </record>
+
+    <!-- Purchase Order Line Tree View  -->
+	<record id="purchase_order_line_tree_view" model="ir.ui.view">
+		<field name="name">purchase.order.line.tree</field>
+        <field name="model">purchase.order.line</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+        	<tree create="false" edit="false">
+        		<field name="order_id" string="Order"/>
+        		<field name="partner_id" string="Partner"/>
+        		<field name="product_id"/>
+        		<field name="name"/>
+        		<field name="product_uom" string="Product Unit of Measure"/>
+        		<field name="product_qty"/>
+        		<field name="qty_received"/>
+        		<field name="price_unit"/>
+        		<field name="taxes_id" widget="many2many_tags"/>
+        		<field name="price_subtotal" sum='price_subtotal'/>
+        		<field name="date_planned"/>
+        		<field name="state"/>
+        	</tree>
+        </field>
+	</record>
+
+	<!-- Purchase Order Line Search View  -->
+	<record id="purchase_order_line_search_view" model="ir.ui.view">
+		<field name="name">purchase.order.line.search</field>
+        <field name="model">purchase.order.line</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+        	<search string="Search Purchase Order">
+                <field name="order_id"/>
+                <field name="product_id"/>
+                <field name="partner_id" string="Vendor" filter_domain="[('partner_id', 'child_of', self)]"/>
+                <filter name="hide_cancelled" string="Hide cancelled lines" domain="[('state', '!=', 'cancel')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="groupby_supplier" string="Vendor" domain="[]" context="{'group_by' : 'partner_id'}"/>
+                    <filter name="groupby_product" string="Product" domain="[]" context="{'group_by' : 'product_id'}"/>
+                    <filter string="Order Reference" name="order_reference" domain="[]" context="{'group_by' :'order_id'}"/>
+                    <filter string="Status" name="status" domain="[]" context="{'group_by' : 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+	<record id="action_purchase_order_line_view" model="ir.actions.act_window">
+		<field name="name">Purchase Order Line</field>
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">tree,kanban,pivot,graph,calendar</field>
+        <field name="domain">[('state', 'not in', ('draft','sent'))]</field>
+	</record>
+
+	<record id="action_purchase_rfq_order_line_view" model="ir.actions.act_window">
+		<field name="name">RFQ Order Line</field>
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">tree,kanban,pivot,graph,calendar</field>
+        <field name="domain">[('state', 'in', ('draft','sent'))]</field>
+	</record>
+
+	<menuitem id="purchase_order_line_menu" name="Purchase Order Lines"
+            parent="purchase.menu_procurement_management"
+            action="action_purchase_order_line_view" sequence="16"/>
+
+    <menuitem id="rfq_purchase_order_line_menu" name="RFQ Order Lines"
+            parent="purchase.menu_procurement_management"
+            action="action_purchase_rfq_order_line_view" sequence="17"/>
+</odoo>
