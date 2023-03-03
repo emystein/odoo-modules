@@ -4,7 +4,7 @@
     'version': '1.0',
     'description': """
     Adds a filter for Purchase Order Lines 'Received quantity is less than requested'
-    """
+    """,
     'depends': ['purchase', 'stock', 'basic_purchase_order_line_views'],
     'data': [
         'views/purchase_views.xml',
